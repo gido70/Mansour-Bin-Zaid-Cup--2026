@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>الإحصائيات - بطولة كأس منصور بن زايد 2026</title>
+  <link rel="icon" type="image/png" href="assets/img/logo-tournament.png">
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-logos">
+    <img class="logo" src="assets/img/logo-committee-white.png" alt="شعار اللجنة" />
+  </div>
+  <div class="brand">
+    <div class="brand-title">بطولة كأس منصور بن زايد 2026</div>
+    
+  </div>
+  <div class="topbar-logos">
+    <img class="logo" src="assets/img/logo-cup-white.png" alt="شعار البطولة" />
+  </div>
+  <nav class="nav">
+    <a class="nav-link" href="index.html">الرئيسية</a>
+    <a class="nav-link" href="group.html?g=A">المجموعة A</a>
+    <a class="nav-link" href="group.html?g=B">المجموعة B</a>
+    <a class="nav-link" href="group.html?g=C">المجموعة C</a>
+    <a class="nav-link" href="group.html?g=D">المجموعة D</a>
+    <a class="nav-link" href="groups_all.html">ترتيب جميع المجموعات</a>
+    <a class="nav-link" href="awards.html">الجوائز الفردية</a>
+    <a class="nav-link" class="nav-link active" href="stats.html">الإحصائيات</a>
+    <a class="nav-link" href="knockout.html">الأدوار النهائية</a>
+  </nav>
+</header>
+<main class="container">
+  <section class="card">
+    <div class="card-h">
+      <h2>الإحصائيات</h2>
+      <div class="badge" id="statsBadge">—</div>
+    </div>
+    <div class="card-b">
+      <div id="loadError" class="note hidden"></div>
+
+      <h3 style="margin-top:0">الهدافون</h3>
+      <div class="table-wrap">
+        <table class="table" id="tblScorers">
+          <thead><tr><th>الترتيب</th><th>اللاعب</th><th>الفريق</th><th>الأهداف</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <h3>الكروت الصفراء</h3>
+      <div class="table-wrap">
+        <table class="table" id="tblYC">
+          <thead><tr><th>الترتيب</th><th>اللاعب</th><th>الفريق</th><th>الصفراء</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <h3>الكروت الحمراء</h3>
+      <div class="table-wrap">
+        <table class="table" id="tblRC">
+          <thead><tr><th>الترتيب</th><th>اللاعب</th><th>الفريق</th><th>الحمراء</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <h3>إحصائيات VAR</h3>
+      <div class="table-wrap">
+        <table class="table" id="tblVAR">
+          <thead><tr><th>الترتيب</th><th>الفريق</th><th>مرات الاستخدام</th><th>موفقة</th><th>غير موفقة</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <h3>أفضل لاعب في كل مباراة</h3>
+      <div class="table-wrap">
+        <table class="table" id="tblMOM">
+          <thead><tr><th>المباراة</th><th>الكود</th><th>أفضل لاعب</th><th>الفريق</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  © بطولة كأس منصور بن زايد 2026 — GitHub Pages
+</footer>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/stats.js"></script>
+<script>
+  CupStats.init();
+</script>
+</body>
+</html>

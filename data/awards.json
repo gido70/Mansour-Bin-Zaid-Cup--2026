@@ -1,0 +1,27 @@
+{
+  "updated_at": "",
+  "teams": {
+    "champion": "",
+    "runnerup": "",
+    "third": "",
+    "fourth": ""
+  },
+  "individual": {
+    "top_scorer": {
+      "name": "",
+      "team": ""
+    },
+    "best_player": {
+      "name": "",
+      "team": ""
+    },
+    "best_keeper": {
+      "name": "",
+      "team": ""
+    },
+    "best_admin": {
+      "name": "",
+      "team": ""
+    }
+  }
+}
