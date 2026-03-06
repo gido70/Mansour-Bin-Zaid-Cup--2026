@@ -477,7 +477,9 @@ function setupPlayerDropdowns(){
   function addGoal(){
     if(!current) return;
     const side = qs("#side").value;
-    const name = qs("#player").value.trim();
+    const name =
+      qs("#player").value.trim() ||
+      qs("#playerSearch").value.trim();
     if(!side || !name) return;
     const idx = sideToIndex(side);
     const map = idx===1 ? goalsMap1 : goalsMap2;
@@ -509,7 +511,9 @@ function setupPlayerDropdowns(){
   function addCard(cardType){
     if(!current) return;
     const side = qs("#cardSide").value;
-    const name = qs("#cardPlayer").value.trim();
+    const name =
+      qs("#cardPlayer").value.trim() ||
+      qs("#cardSearch").value.trim();
     if(!side || !name) return;
     const idx = sideToIndex(side);
     const isYellow = cardType==="yellow";
