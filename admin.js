@@ -308,6 +308,12 @@ let awards = null;         // array of objects from CSV
   }
 
   function rosterPlayers(team){
+   const aliases = {
+  "مدارس الامارات الوطنية": "مدارس الإمارات الوطنية",
+  "مكتب الشؤون التنموية وأسر الشهداء": "مكتب الشؤون التنموية واسر الشهداء"
+};
+
+team = aliases[team] || team;
     function norm(s){
       return String(s||"")
         .trim()
