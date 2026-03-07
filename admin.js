@@ -307,25 +307,29 @@ let awards = null;         // array of objects from CSV
     });
   }
 
-  function normalizeTeamName(s){
-    return String(s||"")
-      .normalize("NFKC")
-      .replace(/[أإآ]/g,"ا")
-      .replace(/ى/g,"ي")
-      .replace(/ة/g,"ه")
-      .replace(/\s+/g," ")
-      .trim();
-  }
-
   function rosterPlayers(team){
-    if(!team) return [];
-    const wanted = normalizeTeamName(team);
-    let key = Object.keys(roster).find(t => normalizeTeamName(t) === wanted);
-    if(!key){
-      key = Object.keys(roster).find(t => wanted.includes(normalizeTeamName(t)) || normalizeTeamName(t).includes(wanted));
+    function norm(s){
+      return String(s||"")
+        .trim()
+        .replace(/[ً-ٰٟ]/g, "")
+        .replace(/[أإآٱ]/g, "ا")
+        .replace(/ى/g, "ي")
+        .replace(/ة/g, "ه")
+        .replace(/ؤ/g, "و")
+        .replace(/ئ/g, "ي")
+        .replace(/\s+/g, " ");
     }
-    if(!key) return [];
-    const t = roster[key];
+
+    const direct = roster[team];
+    let t = direct;
+
+    if(!t){
+      const wanted = norm(team);
+      const matchedKey = Object.keys(roster || {}).find(k => norm(k) === wanted);
+      if(matchedKey) t = roster[matchedKey];
+    }
+
+    if(!t) return [];
     const arr = Array.isArray(t) ? t : (t.players || []);
     return arr
       .filter(p => p && p.name)
@@ -427,7 +431,7 @@ function setupPlayerDropdowns(){
 
     // roster-based dropdowns
     setupPlayerDropdowns();
-    setSelectOrManual("#pom", "#pom_manual", (m.player_of_match ?? ""));
+    qs("#pom").value = (m.player_of_match ?? "");
 
     // Parse scorers/cards into maps
     goalsMap1 = parseListToMap(m.goals_team1 || "");
@@ -469,7 +473,7 @@ function setupPlayerDropdowns(){
     current.referee1 = getSelectOrManual("#ref1", "#ref1_manual");
     current.referee2 = getSelectOrManual("#ref2", "#ref2_manual");
     current.commentator = getSelectOrManual("#commentator", "#commentator_manual");
-    current.player_of_match = getSelectOrManual("#pom", "#pom_manual");
+    current.player_of_match = qs("#pom").value.trim();
 
     applyMapsToCurrent();
     refreshCSVOut();
@@ -493,7 +497,7 @@ function setupPlayerDropdowns(){
   function addGoal(){
     if(!current) return;
     const side = qs("#side").value;
-    const name = qs("#player").value.trim() || qs("#player_manual")?.value.trim() || qs("#playerSearch")?.value.trim();
+    const name = qs("#player").value.trim();
     if(!side || !name) return;
     const idx = sideToIndex(side);
     const map = idx===1 ? goalsMap1 : goalsMap2;
@@ -525,7 +529,7 @@ function setupPlayerDropdowns(){
   function addCard(cardType){
     if(!current) return;
     const side = qs("#cardSide").value;
-    const name = qs("#cardPlayer").value.trim() || qs("#cardPlayer_manual")?.value.trim() || qs("#cardSearch")?.value.trim();
+    const name = qs("#cardPlayer").value.trim();
     if(!side || !name) return;
     const idx = sideToIndex(side);
     const isYellow = cardType==="yellow";
@@ -737,11 +741,9 @@ async function startPanel(){
     clearOnSelect("#ref1", "#ref1_manual");
     clearOnSelect("#ref2", "#ref2_manual");
     clearOnSelect("#commentator", "#commentator_manual");
-    clearOnSelect("#pom", "#pom_manual");
     clearOnManual("#ref1_manual", "#ref1");
     clearOnManual("#ref2_manual", "#ref2");
     clearOnManual("#commentator_manual", "#commentator");
-    clearOnManual("#pom_manual", "#pom");
 
     // Wire buttons
     qs("#btnLoadMatch").addEventListener("click", () => loadMatchById(qs("#matchSelect").value));
