@@ -320,13 +320,11 @@ let awards = null;         // array of objects from CSV
         .replace(/\s+/g, " ");
     }
 
-    const direct = roster[team];
-    let t = direct;
-
+    let t = roster[team];
     if(!t){
       const wanted = norm(team);
-      const matchedKey = Object.keys(roster || {}).find(k => norm(k) === wanted);
-      if(matchedKey) t = roster[matchedKey];
+      const key = Object.keys(roster || {}).find(k => norm(k) === wanted);
+      if(key) t = roster[key];
     }
 
     if(!t) return [];
@@ -335,9 +333,10 @@ let awards = null;         // array of objects from CSV
       .filter(p => p && p.name)
       .map(p => ({
         value: p.name,
-        label: (p.number ? (p.number + ' — ' + p.name) : p.name)
+        label: (p.number ? (p.number + " — " + p.name) : p.name)
       }));
   }
+
 
   
   // ====== Searchable selects (players) ======
@@ -431,7 +430,7 @@ function setupPlayerDropdowns(){
 
     // roster-based dropdowns
     setupPlayerDropdowns();
-    qs("#pom").value = (m.player_of_match ?? "");
+    setSelectOrManual("#pom", "#pom_manual", (m.player_of_match ?? ""));
 
     // Parse scorers/cards into maps
     goalsMap1 = parseListToMap(m.goals_team1 || "");
@@ -473,7 +472,7 @@ function setupPlayerDropdowns(){
     current.referee1 = getSelectOrManual("#ref1", "#ref1_manual");
     current.referee2 = getSelectOrManual("#ref2", "#ref2_manual");
     current.commentator = getSelectOrManual("#commentator", "#commentator_manual");
-    current.player_of_match = qs("#pom").value.trim();
+    current.player_of_match = qs("#pom").value.trim() || qs("#pom_manual")?.value.trim();
 
     applyMapsToCurrent();
     refreshCSVOut();
@@ -497,7 +496,10 @@ function setupPlayerDropdowns(){
   function addGoal(){
     if(!current) return;
     const side = qs("#side").value;
-    const name = qs("#player").value.trim();
+    const name =
+      qs("#player").value.trim() ||
+      qs("#player_manual")?.value.trim() ||
+      qs("#playerSearch").value.trim();
     if(!side || !name) return;
     const idx = sideToIndex(side);
     const map = idx===1 ? goalsMap1 : goalsMap2;
@@ -529,7 +531,10 @@ function setupPlayerDropdowns(){
   function addCard(cardType){
     if(!current) return;
     const side = qs("#cardSide").value;
-    const name = qs("#cardPlayer").value.trim();
+    const name =
+      qs("#cardPlayer").value.trim() ||
+      qs("#cardPlayer_manual")?.value.trim() ||
+      qs("#cardSearch").value.trim();
     if(!side || !name) return;
     const idx = sideToIndex(side);
     const isYellow = cardType==="yellow";
