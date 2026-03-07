@@ -2,10 +2,8 @@
 (() => {
   "use strict";
 
-  // ====== EDIT PIN HERE (numbers only) ======
   const ADMIN_PIN = "2026";
 
-  // ====== Helpers ======
   const qs = (s) => document.querySelector(s);
   const escapeCSV = (v) => {
     const s = String(v ?? "");
@@ -83,17 +81,14 @@
   }
 
   function formatListFromMap(map){
-    // map: name -> count
     const items = Object.entries(map)
       .filter(([n,c]) => n && c>0)
       .sort((a,b)=> a[0].localeCompare(b[0],'ar'));
     if(!items.length) return "";
-    // "Name (2)، Name2 (1)"
     return items.map(([n,c]) => c===1 ? `${n} (1)` : `${n} (${c})`).join("، ");
   }
 
   function parseListToMap(text){
-    // Accept: "Name (2)، Name2 (1)" or "Name, Name2"
     const s = String(text||"").trim();
     const map = {};
     if(!s) return map;
@@ -111,20 +106,80 @@
     return map;
   }
 
-  // ====== State ======
-  let roster = {};          // team -> {group, players:[{number,name}]}
+  let roster = {};
   let matches = [];
-let awards = null;         // array of objects from CSV
-  let headers = [];         // csv headers
-  let current = null;       // current match object reference
-  let originalSnapshot = ""; // for reset
+  let awards = null;
+  let headers = [];
+  let current = null;
+  let originalSnapshot = "";
 
-  // scorers/cards maps & history for undo
   let goalsMap1 = {}, goalsMap2 = {};
   let yellowMap1 = {}, redMap1 = {}, yellowMap2 = {}, redMap2 = {};
-  let history = []; // {type, side, name, cardType?}
+  let history = [];
 
-  // ====== VAR multi (max 4 events; 2 لكل فريق) ======
+  const QF25_SPECIAL_PLAYERS = {
+    "مدارس الامارات الوطنية": [
+      { number: "1", name: "ابراهيم الجرايحي كشك" },
+      { number: "10", name: "احمد سمير علي" },
+      { number: "24", name: "ابراهيم رجب احمد" },
+      { number: "11", name: "محروس إبراهيم الجندي" },
+      { number: "6", name: "محمد عبدالرحمن قوره" },
+      { number: "19", name: "سعد سامي صالح" },
+      { number: "20", name: "ناش . أمواه" },
+      { number: "8", name: "ماهر احمد حسن" },
+      { number: "44", name: "شادي تامر علوي" },
+      { number: "18", name: "احمد علاء الدين عبدالوهاب" },
+      { number: "17", name: "حسام صلاح رمضان" },
+      { number: "4", name: "وليد احمد رجب" },
+      { number: "9", name: "يوسف اكيوض" }
+    ],
+    "مدارس الإمارات الوطنية": [
+      { number: "1", name: "ابراهيم الجرايحي كشك" },
+      { number: "10", name: "احمد سمير علي" },
+      { number: "24", name: "ابراهيم رجب احمد" },
+      { number: "11", name: "محروس إبراهيم الجندي" },
+      { number: "6", name: "محمد عبدالرحمن قوره" },
+      { number: "19", name: "سعد سامي صالح" },
+      { number: "20", name: "ناش . أمواه" },
+      { number: "8", name: "ماهر احمد حسن" },
+      { number: "44", name: "شادي تامر علوي" },
+      { number: "18", name: "احمد علاء الدين عبدالوهاب" },
+      { number: "17", name: "حسام صلاح رمضان" },
+      { number: "4", name: "وليد احمد رجب" },
+      { number: "9", name: "يوسف اكيوض" }
+    ],
+    "مكتب الشؤون التنموية واسر الشهداء": [
+      { number: "1", name: "قويليرمي روتشا بيرالدو" },
+      { number: "5", name: "ايفرتون باولو اراوجو" },
+      { number: "9", name: "فلافيو دي ليما" },
+      { number: "25", name: "علي عبدالله حسن" },
+      { number: "28", name: "روان سانتوس دي الميديا" },
+      { number: "88", name: "التون لوكاس دا سيلفا" },
+      { number: "15", name: "بيدرو هنريكي ايفان" },
+      { number: "19", name: "كيفن بايرس دوس سانتوس" },
+      { number: "8", name: "باولو قوستافو دي اوليفيرا" },
+      { number: "20", name: "ثياقو قريبي ." },
+      { number: "2", name: "قيلمرسون دوس سانتوس موتا" },
+      { number: "11", name: "ميسياس ايلاريو دا سيلفا" },
+      { number: "33", name: "مارسيو لويز بيو فينانسيو" }
+    ],
+    "مكتب الشؤون التنموية وأسر الشهداء": [
+      { number: "1", name: "قويليرمي روتشا بيرالدو" },
+      { number: "5", name: "ايفرتون باولو اراوجو" },
+      { number: "9", name: "فلافيو دي ليما" },
+      { number: "25", name: "علي عبدالله حسن" },
+      { number: "28", name: "روان سانتوس دي الميديا" },
+      { number: "88", name: "التون لوكاس دا سيلفا" },
+      { number: "15", name: "بيدرو هنريكي ايفان" },
+      { number: "19", name: "كيفن بايرس دوس سانتوس" },
+      { number: "8", name: "باولو قوستافو دي اوليفيرا" },
+      { number: "20", name: "ثياقو قريبي ." },
+      { number: "2", name: "قيلمرسون دوس سانتوس موتا" },
+      { number: "11", name: "ميسياس ايلاريو دا سيلفا" },
+      { number: "33", name: "مارسيو لويز بيو فينانسيو" }
+    ]
+  };
+
   function getVarRowEls(i){
     return {
       team: qs(`#var${i}_team`),
@@ -143,7 +198,6 @@ let awards = null;         // array of objects from CSV
   }
 
   function loadVAREventsFromMatch(m){
-    // Support both: old single fields OR new var1..var4 fields
     clearVAREventsUI();
 
     const hasNew = (m.var1_team!=null || m.var1_type!=null || m.var1_result!=null);
@@ -158,7 +212,6 @@ let awards = null;         // array of objects from CSV
       return;
     }
 
-    // Backward: map old single var to row1
     if(String(m.var_used||"0")==="1"){
       const r = getVarRowEls(1);
       if(r.team) r.team.value = (m.var_for ?? "");
@@ -170,7 +223,6 @@ let awards = null;         // array of objects from CSV
   function applyVAREventsToMatch(){
     if(!current) return;
 
-    // Read 4 rows -> normalized events
     const ev = [];
     for(let i=1;i<=4;i++){
       const r = getVarRowEls(i);
@@ -181,20 +233,17 @@ let awards = null;         // array of objects from CSV
       if(team && type && result) ev.push({team, type, result});
     }
 
-    // Store as columns for CSV
     for(let i=1;i<=4;i++){
       current[`var${i}_team`] = ev[i-1]?.team || "";
       current[`var${i}_type`] = ev[i-1]?.type || "";
       current[`var${i}_result`] = ev[i-1]?.result || "";
     }
 
-    // Count per team (for stats + backward)
     const c1 = ev.filter(x=>x.team==="team1").length;
     const c2 = ev.filter(x=>x.team==="team2").length;
     current.var_team1 = String(c1);
     current.var_team2 = String(c2);
 
-    // Backward single fields for match page
     if(ev.length){
       current.var_used = "1";
       current.var_for = ev[0].team;
@@ -208,7 +257,6 @@ let awards = null;         // array of objects from CSV
     }
   }
 
-  // ====== UI ======
   function setMsg(id, text, isError=false){
     const el = qs(id);
     if(!el) return;
@@ -243,6 +291,7 @@ let awards = null;         // array of objects from CSV
       el.appendChild(o);
     });
   }
+
   function setStatus(text){
     const el = qs("#dataStatus");
     if(el) el.textContent = text;
@@ -267,7 +316,6 @@ let awards = null;         // array of objects from CSV
   }
 
   function buildCSV(){
-    // Ensure required columns exist
     const required = [
       "match_code","group","round","date","time","team1","team2","score1","score2",
       "referee1","referee2","commentator","player_of_match",
@@ -308,32 +356,64 @@ let awards = null;         // array of objects from CSV
   }
 
   function rosterPlayers(team){
-    const t = roster[team];
+    const special = QF25_SPECIAL_PLAYERS[String(team || "").trim()];
+    if (special) {
+      return special.map(p => ({
+        value: p.name,
+        label: p.number ? (p.number + " — " + p.name) : p.name
+      }));
+    }
+
+    function norm(s){
+      return String(s||"")
+        .trim()
+        .replace(/[ً-ٰٟ]/g, "")
+        .replace(/[أإآٱ]/g, "ا")
+        .replace(/ى/g, "ي")
+        .replace(/ة/g, "ه")
+        .replace(/ؤ/g, "و")
+        .replace(/ئ/g, "ي")
+        .replace(/\s+/g, " ");
+    }
+
+    const aliases = {
+      "مدارس الامارات الوطنية": "مدارس الإمارات الوطنية",
+      "مدارس الإمارات الوطنية": "مدارس الإمارات الوطنية",
+      "مكتب الشؤون التنموية وأسر الشهداء": "مكتب الشؤون التنموية واسر الشهداء",
+      "مكتب الشؤون التنموية واسر الشهداء": "مكتب الشؤون التنموية واسر الشهداء"
+    };
+
+    team = aliases[team] || team;
+
+    let t = roster[team];
+    if(!t){
+      const wanted = norm(team);
+      const key = Object.keys(roster || {}).find(k => norm(k) === wanted);
+      if(key) t = roster[key];
+    }
+
     if(!t) return [];
     const arr = Array.isArray(t) ? t : (t.players || []);
     return arr
       .filter(p => p && p.name)
       .map(p => ({
         value: p.name,
-        label: (p.number ? (p.number + ' — ' + p.name) : p.name)
+        label: (p.number ? (p.number + " — " + p.name) : p.name)
       }));
   }
 
-  
-  // ====== Searchable selects (players) ======
   function makeSelectSearchable(inputSel, selectSel){
     const inp = (typeof inputSel==="string") ? qs(inputSel) : inputSel;
     const sel = (typeof selectSel==="string") ? qs(selectSel) : selectSel;
     if(!inp || !sel) return;
 
-    // snapshot original options (except placeholder)
     let snapshot = [];
     function takeSnapshot(){
       snapshot = Array.from(sel.options).map(o => ({value:o.value, text:o.textContent}));
     }
     function restore(){
       sel.innerHTML = "";
-      snapshot.forEach((o,idx)=>{
+      snapshot.forEach((o)=>{
         const opt = document.createElement("option");
         opt.value = o.value;
         opt.textContent = o.text;
@@ -348,7 +428,6 @@ let awards = null;         // array of objects from CSV
       restore();
       if(q.length < 2) return;
 
-      // keep placeholder first option
       const opts = Array.from(sel.options);
       const keep0 = opts.shift();
       const filtered = opts.filter(o => o.textContent.toLowerCase().includes(q));
@@ -357,10 +436,10 @@ let awards = null;         // array of objects from CSV
       filtered.forEach(o=>sel.appendChild(o));
     });
 
-    // when select options are re-filled, update snapshot
     sel.addEventListener("mbz:refill", ()=>{ takeSnapshot(); });
   }
-function setupPlayerDropdowns(){
+
+  function setupPlayerDropdowns(){
     if(!current) return;
     const team1 = current.team1 || "";
     const team2 = current.team2 || "";
@@ -375,7 +454,6 @@ function setupPlayerDropdowns(){
     fillSelect("#cardPlayer", p1.concat(p2), "اختر لاعب");
     qs("#cardPlayer")?.dispatchEvent(new Event("mbz:refill"));
 
-    // Side select: team1/team2
     fillSelect("#side", [`الفريق 1 — ${team1}`, `الفريق 2 — ${team2}`], "اختر الفريق");
     fillSelect("#cardSide", [`الفريق 1 — ${team1}`, `الفريق 2 — ${team2}`], "اختر الفريق");
   }
@@ -394,13 +472,10 @@ function setupPlayerDropdowns(){
     current = m;
     hideMsg("#panelMsg");
 
-    // snapshot (for reset)
     originalSnapshot = JSON.stringify(m);
 
-    // Fill basic fields
     qs("#score1").value = (m.score1 ?? "");
     qs("#score2").value = (m.score2 ?? "");
-    // VAR (multi events)
     loadVAREventsFromMatch(m);
 
     setupStaffDropdowns();
@@ -409,11 +484,9 @@ function setupPlayerDropdowns(){
     setSelectOrManual("#ref2", "#ref2_manual", (m.referee2 ?? ""));
     setSelectOrManual("#commentator", "#commentator_manual", (m.commentator ?? ""));
 
-    // roster-based dropdowns
     setupPlayerDropdowns();
-    qs("#pom").value = (m.player_of_match ?? "");
+    setSelectOrManual("#pom", "#pom_manual", (m.player_of_match ?? ""));
 
-    // Parse scorers/cards into maps
     goalsMap1 = parseListToMap(m.goals_team1 || "");
     goalsMap2 = parseListToMap(m.goals_team2 || "");
     yellowMap1 = parseListToMap(m.yellow_team1 || "");
@@ -423,7 +496,6 @@ function setupPlayerDropdowns(){
     history = [];
     updatePreview();
 
-    // meta
     const meta = `${m.group || ""} • الجولة: ${m.round || ""} • ${m.date || ""} • ${m.time || ""}<br>${m.team1 || ""} × ${m.team2 || ""}`;
     qs("#matchMeta").innerHTML = meta;
 
@@ -445,15 +517,13 @@ function setupPlayerDropdowns(){
     if(!current) return;
     current.score1 = qs("#score1").value.trim();
     current.score2 = qs("#score2").value.trim();
-    // VAR handled by applyVAREventsToMatch()
 
-    // Backward-compatible counters used by UI badges (0/1)
     current.var_team1 = (current.var_used === "1" && current.var_for === "team1") ? "1" : "0";
     current.var_team2 = (current.var_used === "1" && current.var_for === "team2") ? "1" : "0";
     current.referee1 = getSelectOrManual("#ref1", "#ref1_manual");
     current.referee2 = getSelectOrManual("#ref2", "#ref2_manual");
     current.commentator = getSelectOrManual("#commentator", "#commentator_manual");
-    current.player_of_match = qs("#pom").value.trim();
+    current.player_of_match = qs("#pom").value.trim() || qs("#pom_manual")?.value.trim();
 
     applyMapsToCurrent();
     refreshCSVOut();
@@ -479,6 +549,7 @@ function setupPlayerDropdowns(){
     const side = qs("#side").value;
     const name =
       qs("#player").value.trim() ||
+      qs("#player_manual")?.value.trim() ||
       qs("#playerSearch").value.trim();
     if(!side || !name) return;
     const idx = sideToIndex(side);
@@ -513,6 +584,7 @@ function setupPlayerDropdowns(){
     const side = qs("#cardSide").value;
     const name =
       qs("#cardPlayer").value.trim() ||
+      qs("#cardPlayer_manual")?.value.trim() ||
       qs("#cardSearch").value.trim();
     if(!side || !name) return;
     const idx = sideToIndex(side);
@@ -568,9 +640,7 @@ function setupPlayerDropdowns(){
     }
   }
 
-  // ====== Boot ======
   async function init(){
-    // Gate
     qs("#btnLogin").addEventListener("click", () => {
       const pin = qs("#pin").value.trim();
       if(pin === ADMIN_PIN){
@@ -587,129 +657,32 @@ function setupPlayerDropdowns(){
     });
   }
 
-  
-    // Awards panel
-    function setupAwardsPanel() {
-      const elJson = document.querySelector("#awardsJson");
-      const btnSave = document.querySelector("#btnSaveAwards");
-      const btnDl = document.querySelector("#btnDownloadAwards");
-      if (!elJson || !btnSave || !btnDl) return;
-
-      const teams = Object.keys(roster || {});
-      const players = (staffAll || []).filter(x => (x.role || "").includes("لاعب")).map(x => ({ value: x.name, label: `${x.name} — ${x.team}` }));
-      const admins = (staffAll || []).filter(x => (x.role || "").includes("إداري")).map(x => ({ value: x.name, label: `${x.name} — ${x.team}` }));
-
-      const teamOpts = teams.map(t => ({ value: t, label: t }));
-      fillSelect("#aw_champion_team", teamOpts, "اختر الفريق");
-      fillSelect("#aw_runnerup_team", teamOpts, "اختر الفريق");
-      fillSelect("#aw_third_team", teamOpts, "اختر الفريق");
-      fillSelect("#aw_fourth_team", teamOpts, "اختر الفريق");
-
-      fillSelect("#aw_top_scorer", players, "اختر لاعب");
-      fillSelect("#aw_best_player", players, "اختر لاعب");
-      fillSelect("#aw_best_keeper", players, "اختر لاعب");
-      fillSelect("#aw_best_admin", admins.length ? admins : players, "اختر إداري");
-
-      // load existing from localStorage
-      try {
-        const saved = localStorage.getItem("mbz_awards");
-        if (saved) {
-          awards = JSON.parse(saved);
-          if (awards && awards.teams) {
-            document.querySelector("#aw_champion_team").value = awards.teams.champion || "";
-            document.querySelector("#aw_runnerup_team").value = awards.teams.runnerup || "";
-            document.querySelector("#aw_third_team").value = awards.teams.third || "";
-            document.querySelector("#aw_fourth_team").value = awards.teams.fourth || "";
-          }
-          if (awards && awards.individual) {
-            document.querySelector("#aw_top_scorer").value = awards.individual.top_scorer?.name || "";
-            document.querySelector("#aw_best_player").value = awards.individual.best_player?.name || "";
-            document.querySelector("#aw_best_keeper").value = awards.individual.best_keeper?.name || "";
-            document.querySelector("#aw_best_admin").value = awards.individual.best_admin?.name || "";
-          }
-        }
-      } catch(e) {}
-
-      function buildAwards() {
-        const champion = document.querySelector("#aw_champion_team").value || "";
-        const runnerup = document.querySelector("#aw_runnerup_team").value || "";
-        const third = document.querySelector("#aw_third_team").value || "";
-        const fourth = document.querySelector("#aw_fourth_team").value || "";
-
-        const topScorer = document.querySelector("#aw_top_scorer").value || "";
-        const bestPlayer = document.querySelector("#aw_best_player").value || "";
-        const bestKeeper = document.querySelector("#aw_best_keeper").value || "";
-        const bestAdmin = document.querySelector("#aw_best_admin").value || "";
-
-        const lookup = (name) => (staffAll || []).find(x => x.name === name) || null;
-
-        return {
-          updated_at: new Date().toISOString(),
-          teams: { champion, runnerup, third, fourth },
-          individual: {
-            top_scorer: topScorer ? { name: topScorer, team: lookup(topScorer)?.team || "" } : { name: "", team: "" },
-            best_player: bestPlayer ? { name: bestPlayer, team: lookup(bestPlayer)?.team || "" } : { name: "", team: "" },
-            best_keeper: bestKeeper ? { name: bestKeeper, team: lookup(bestKeeper)?.team || "" } : { name: "", team: "" },
-            best_admin: bestAdmin ? { name: bestAdmin, team: lookup(bestAdmin)?.team || "" } : { name: "", team: "" }
-          }
-        };
-      }
-
-      function refreshJson() {
-        awards = buildAwards();
-        elJson.value = JSON.stringify(awards, null, 2);
-      }
-
-      btnSave.addEventListener("click", () => {
-        refreshJson();
-        try { localStorage.setItem("mbz_awards", elJson.value); } catch(e) {}
-        alert("تم حفظ الجوائز داخل اللوحة.");
-      });
-
-      btnDl.addEventListener("click", () => {
-        refreshJson();
-        downloadText("awards.json", elJson.value);
-      });
-
-      // initial
-      refreshJson();
-    }
-
-async function startPanel(){
+  async function startPanel(){
     setStatus("تحميل…");
-    // Load roster
     const rosterText = await fetchText("data/roster.json");
     roster = JSON.parse(rosterText);
 
-    // Load matches
     const csvText = await fetchText("data/matches.csv");
     const rows = parseCSV(csvText);
 
     headers = Object.keys(rows[0] || {});
-    // Ensure required headers exist
     const must = ["var_used","var_for","var_type","var_result","var_team1","var_team2",
       "var1_team","var1_type","var1_result","var2_team","var2_type","var2_result","var3_team","var3_type","var3_result","var4_team","var4_type","var4_result"];
     must.forEach(h=>{ if(!headers.includes(h)) headers.push(h); });
     matches = rows;
 
-    // Ensure match_code exists
     matches = matches.filter(m => (m.match_code||"").trim() !== "");
 
     setupMatchDropdown();
-    // Bind player search inputs (type 2 letters)
     makeSelectSearchable("#playerSearch", "#player");
     makeSelectSearchable("#pomSearch", "#pom");
     makeSelectSearchable("#cardSearch", "#cardPlayer");
     refreshCSVOut();
     setStatus("جاهز");
 
-    // Default load first match
     const firstId = qs("#matchSelect").value;
     if(firstId) loadMatchById(firstId);
 
-    // Allow manual entry for referees/commentator:
-    // - if user selects from dropdown, clear manual
-    // - if user types manual, clear dropdown selection
     const clearOnSelect = (sel, man) => {
       const s = qs(sel), m = qs(man);
       if(!s || !m) return;
@@ -729,7 +702,6 @@ async function startPanel(){
     clearOnManual("#ref2_manual", "#ref2");
     clearOnManual("#commentator_manual", "#commentator");
 
-    // Wire buttons
     qs("#btnLoadMatch").addEventListener("click", () => loadMatchById(qs("#matchSelect").value));
     qs("#btnSaveRow").addEventListener("click", saveRow);
     qs("#btnResetRow").addEventListener("click", resetRow);
@@ -747,5 +719,5 @@ async function startPanel(){
     qs("#btnCopy").addEventListener("click", copyCSV);
   }
 
-  document.addEventListener("DOMContentLoaded", ()=>{ init(); try{ setupAwardsPanel(); }catch(e){ console.error(e);} });
+  document.addEventListener("DOMContentLoaded", ()=>{ init(); });
 })();
