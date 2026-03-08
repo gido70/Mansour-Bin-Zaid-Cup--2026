@@ -53,7 +53,7 @@ const CupApp = (() => {
 
   async function loadMatches(){
     try{
-      const res = await fetch('data/matches.csv?v=' + Date.now(), { cache: 'no-store' });
+      const res = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vRLHjpseDHGBBuJInXuArd_FtiKVKkhhC3uPu4en2KOStPl660KQ3Csn1lRTs5heC4MaAjLaMXtJ55d/pub?output=csv&v=' + Date.now(), { cache: 'no-store' });
       if(!res.ok) throw new Error('لم أستطع تحميل data/matches.csv (تأكد أنه موجود في المشروع).');
       const text = await res.text();
       const data = parseCSV(text);
