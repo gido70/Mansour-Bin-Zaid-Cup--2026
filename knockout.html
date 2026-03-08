@@ -6,6 +6,12 @@
   <title>الأدوار النهائية</title>
   <link rel="icon" type="image/png" href="assets/img/logo-tournament.png">
   <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0b1f3a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="كأس منصور">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 </head>
 <body id="page">
 <header class="topbar">
@@ -56,5 +62,14 @@
 
 <script src="assets/js/main.js"></script>
 <script> CupApp.initKnockout(); </script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("service-worker.js")
+        .then(function () { console.log("PWA ready"); })
+        .catch(function (err) { console.error("SW registration failed:", err); });
+    });
+  }
+</script>
 </body>
 </html>
