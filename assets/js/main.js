@@ -53,8 +53,8 @@ const CupApp = (() => {
 
   async function loadMatches(){
     try{
-      const res = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vRLHjpseDHGBBuJInXuArd_FtiKVKkhhC3uPu4en2KOStPl660KQ3Csn1lRTs5heC4MaAjLaMXtJ55d/pub?output=csv&v=' + Date.now(), { cache: 'no-store' });
-      if(!res.ok) throw new Error('لم أستطع تحميل data/matches.csv (تأكد أنه موجود في المشروع).');
+      const res = await fetch('data/matches.csv?v=' + Date.now(), { cache: 'no-store' });
+      if(!res.ok) throw new Error('لم أستطع تحميل data/matches.csv (تأكد أنه موجود داخل مجلد data).');
       const text = await res.text();
       const data = parseCSV(text);
       // normalize
@@ -234,7 +234,13 @@ const CupApp = (() => {
       if(ia !== -1 || ib !== -1) return (ia===-1?999:ia) - (ib===-1?999:ib);
       return a.localeCompare(b,'ar');
     });
-    rounds.forEach(r => map.get(r).sort((a,b) => matchKey(a).localeCompare(matchKey(b))));
+    rounds.forEach(r => map.get(r).sort((a,b) => {
+      const ka = matchKey(a);
+      const kb = matchKey(b);
+      const c = ka.localeCompare(kb);
+      if(c !== 0) return c;
+      return String(a.match_code||'').localeCompare(String(b.match_code||''), 'ar');
+    }));
     return { rounds, map };
   }
 
