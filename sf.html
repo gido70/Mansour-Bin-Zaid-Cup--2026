@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>نصف النهائي</title>
+  <link rel="icon" type="image/png" href="assets/img/logo-tournament.png">
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0b1f3a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="كأس منصور">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+</head>
+<body id="page">
+<header class="topbar">
+  <div class="topbar-logos">
+    <img class="logo" src="assets/img/logo-committee-white.png" alt="شعار اللجنة" />
+  </div>
+  <div class="brand">
+    <div class="brand-title">بطولة كأس منصور بن زايد 2026</div>
+    <div class="brand-sub" id="pageSub">نصف النهائي</div>
+  </div>
+  <div class="topbar-logos">
+    <img class="logo" src="assets/img/logo-cup-white.png" alt="شعار البطولة" />
+  </div>
+  <nav class="nav">
+    <a class="nav-link" href="index.html">الرئيسية</a>
+    <a class="nav-link" href="group.html?g=A">المجموعة A</a>
+    <a class="nav-link" href="group.html?g=B">المجموعة B</a>
+    <a class="nav-link" href="group.html?g=C">المجموعة C</a>
+    <a class="nav-link" href="group.html?g=D">المجموعة D</a>
+    <a class="nav-link" href="groups_all.html">ترتيب جميع المجموعات</a>
+    <a class="nav-link" href="awards.html">الجوائز الفردية</a>
+    <a class="nav-link" href="stats.html">الإحصائيات</a>
+    <a class="nav-link" href="knockout.html">الأدوار النهائية</a>
+  </nav>
+</header>
+
+<main class="container">
+  <section class="card">
+    <div class="card-h">
+      <h2 id="stageTitle">نصف النهائي</h2>
+      <div class="badge" id="matchesCount">0</div>
+    </div>
+    <div class="card-b" id="matchesByRound"></div>
+    <div id="loadError" class="note hidden"></div>
+  </section>
+</main>
+
+<footer class="footer">
+  <a class="muted" href="knockout.html">رجوع للأدوار النهائية</a>
+</footer>
+
+<script src="assets/js/main.js"></script>
+<script>
+  CupApp.initStage("SF", "نصف النهائي");
+</script>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("service-worker.js")
+        .then(function () { console.log("PWA ready"); })
+        .catch(function (err) { console.error("SW registration failed:", err); });
+    });
+  }
+</script>
+</body>
+</html>
