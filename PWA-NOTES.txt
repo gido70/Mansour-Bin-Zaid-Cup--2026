@@ -1,1 +1,0 @@
-PWA support added to this project.
