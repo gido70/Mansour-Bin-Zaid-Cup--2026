@@ -179,7 +179,7 @@ const CupApp = (() => {
     const tbl = qs('#tblRecent tbody');
     const badge = qs('#matchesCount');
     if(!tbl || !badge) return;
-    const sorted = [...matches].sort(sortByDateTimeAsc);
+    const sorted = [...matches].sort(sortByDateTimeDesc);
     badge.textContent = String(sorted.length);
     tbl.innerHTML = sorted.map(m => {
       const score = isPlayed(m) ? `${m.score1} - ${m.score2}` : '—';
