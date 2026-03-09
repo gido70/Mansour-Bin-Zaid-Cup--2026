@@ -53,7 +53,7 @@ const CupApp = (() => {
 
   async function loadMatches(){
     try{
-      const res = await fetch('data/matches.csv?v=' + Date.now(), { cache: 'no-store' });
+      const res = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vRLHjpseDHGBBuJInXuArd_FtiKVKkhhC3uPu4en2KOStPl660KQ3Csn1lRTs5heC4MaAjLaMXtJ55d/pub?output=csv&v=' + Date.now(), { cache: 'no-store' });
       if(!res.ok) throw new Error('لم أستطع تحميل data/matches.csv (تأكد أنه موجود في المشروع).');
       const text = await res.text();
       const data = parseCSV(text);
@@ -109,7 +109,7 @@ const CupApp = (() => {
   function matchKey(m){
     const iso = parseArabicDateToISO(m.date);
     const time = String(m.time||"").trim();
-    const hhmm = time && /^\d{1,2}:\d{2}$/.test(time) ? time.split(':').map((x,i)=> i===0 ? x.padStart(2,'0') : x).join('') : '0000';
+    const hhmm = time && /^\d{1,2}:\d{2}$/.test(time) ? time.replace(":","") : "0000";
     return `${iso}T${hhmm}`;
   }
 

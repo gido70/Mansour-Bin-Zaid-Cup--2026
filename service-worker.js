@@ -1,5 +1,5 @@
-const STATIC_CACHE = "mansour-static-v4";
-const DATA_CACHE = "mansour-data-v4";
+const STATIC_CACHE = "mansour-static-v3";
+const DATA_CACHE = "mansour-data-v3";
 
 const STATIC_ASSETS = [
   "./",
